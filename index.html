@@ -154,7 +154,7 @@ let url=ASSET_DIR+s+'.webp',probe=new Image();
 probe.onload=()=>{sources[s]=url;res()};
 probe.onerror=()=>{sources[s]=GUIDE;res()};
 probe.src=url
-}))).then(()=>{ready=true})
+}))).then(()=>{ready=true;this.setState(current)})
 },
 setState(state){
 if(!imgEl)imgEl=$('#flowGuide');
