@@ -1,5 +1,5 @@
 {
   "modelReady": false,
   "modelPath": "ksaju.model3.json",
-  "note": "Flip modelReady to true only after ksaju.model3.json (and its referenced .moc3/textures/motions/expressions) are actually present in this folder, and the Cubism Core is present at public/assets/live2d/vendor/live2dcubismcore.min.js. Live2DBackend reads this file first (it always exists, so this never 404s) and only probes for the model itself when modelReady is true — see public/assets/live2d/ksaju/README.md."
+  "note": "Flip modelReady to true only after ksaju.model3.json (and its referenced .moc3/textures/motions/expressions) are actually present in this folder. Live2DBackend reads this file first (it always exists, so this never 404s) and only probes for the model itself when modelReady is true. The Cubism Core is loaded automatically from Live2D's CDN at runtime, not from this repo — see public/assets/live2d/vendor/README.md and public/assets/live2d/ksaju/README.md."
 }

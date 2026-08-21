@@ -49,28 +49,39 @@ this scaffold assumes, not an SDK requirement:
 | surprise | `Gesture` / 1 | `surprise` |
 | serious | `Idle` / 0 | `serious` |
 
-## Cubism Core
+## Cubism Core — nothing to add here
 
-The Cubism Core runtime (`live2dcubismcore.min.js`) is a separate, license-
-gated file from Live2D Inc.'s official "Cubism SDK for Web" distribution —
-it is **not** included in this repo and must be downloaded manually after
-agreeing to Live2D's SDK license. Place it at:
+Unlike earlier versions of this scaffold, `Live2DBackend` no longer expects
+a local Core file at all. It lazy-loads the official Cubism Core runtime
+straight from Live2D's own CDN at runtime:
 
 ```
-public/assets/live2d/vendor/live2dcubismcore.min.js
+https://cubism.live2d.com/sdk-web/cubismcore/live2dcubismcore.min.js
 ```
 
-`Live2DBackend` only attempts to load it lazily, after confirming both the
-Core script and `ksaju.model3.json` are reachable (`HEAD` requests) — so its
-absence never blocks or slows down the app's first paint.
+That script tag is only injected once `manifest.json` says
+`modelReady:true`, so it never loads (and never blocks first paint) while
+no real model is wired in. See `../vendor/README.md`.
 
-## What still needs real engineering work
+## Cubism Web Framework — already vendored and wired in
 
-Even with the Core + model files in place, `Live2DBackend.init()` currently
-stops short of actually instantiating a Cubism model — see the
-`---- INTEGRATION POINT ----` comment in `src/live2d/Live2DBackend.js` for
-exactly what's left (WebGL canvas setup, `CubismFramework.startUp/initialize`,
-loading the model3.json's referenced files, a render loop). That part
-requires the official Cubism Web Framework sources (also part of the SDK
-download, not just the Core binary) and was intentionally left as a scaffold
-rather than guessed at without the real SDK available to test against.
+`Live2DBackend.js` is a real integration against the Cubism Web Framework —
+not a scaffold. The Framework itself (a compiled build of Live2D's public
+`CubismWebFramework` source) lives at
+`../vendor/cubism-framework/` and is already committed; see its `NOTICE.md`
+for provenance. Once real model files exist here and `manifest.json` is
+flipped to `modelReady:true`, `Live2DBackend.init()` will actually:
+`CubismFramework.startUp`/`initialize`, create a WebGL canvas inside
+`#charLayer`, parse `model3.json` via `CubismModelSettingJson`, load the
+`.moc3` via `CubismUserModel.loadModel`, then every texture/physics/motion/
+expression file the settings reference, build a renderer, and start a
+`requestAnimationFrame` render loop — hiding the WebP `<img id="flowGuide">`
+once the first frame is ready. Any failure at any of those steps (missing
+file, WebGL unavailable, Core failing to load, …) is caught and falls back
+to the WebP sprite renderer immediately, restoring `#flowGuide`.
+
+If your model's actual motion group / expression names differ from the
+table above, update `src/live2d/CharacterStateController.js`'s `STATE_MAP`
+to match — `Live2DBackend` also degrades gracefully (falls back to any
+loaded motion, or no-ops) if a requested group/expression name isn't found,
+rather than erroring.
