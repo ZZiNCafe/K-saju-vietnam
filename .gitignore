@@ -1,0 +1,17 @@
+# K-saju-vietnam is a PUBLIC repo. Live2D/Photoshop source files must never
+# be committed here — they live only in the private ZZiNCafe/K-saju-private-assets
+# repo. This is a safety net, not the primary control: never `git add -f` these.
+*.psd
+*.psb
+*.cmo3
+*.can3
+
+# OS junk
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Editor/temp junk
+*.swp
+*.swo
+*~
