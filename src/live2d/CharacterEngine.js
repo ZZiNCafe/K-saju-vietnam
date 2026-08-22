@@ -25,12 +25,13 @@ const MOUNT_SELECTOR = '#charLayer';
 
 // The fallback backend is a thin adapter over the existing, already-tested
 // CharacterRenderer (WebP sprite swapper, defined inline in index.html and
-// exposed as window.CharacterRenderer). It intentionally does NOT draw any
-// fake eyes/mouth — lookAt()/setLipSync() are expressed as small, whole-
-// character transforms (a few px of translateX, a brief CSS pulse class),
-// the same approach already established for this app's non-Live2D states.
+// exposed as window.CharacterRenderer). Until a real Live2D model is ready,
+// this backend shows a single static character image and nothing else —
+// no fake CSS motion (translate/pulse/filter) standing in for real
+// lookAt/lipSync. lookAt()/setLipSync()/startTalking()/stopTalking() are
+// intentional no-ops here; they only do real work once the Live2D backend
+// (a real Cubism model) is active.
 function createSpriteFallback() {
-  let lookTimer = null;
   return {
     kind: 'sprite-fallback',
     async init() {
@@ -47,8 +48,6 @@ function createSpriteFallback() {
       return true;
     },
     setState(state) {
-      const layer = document.getElementById('charLayer');
-      if (layer) layer.style.transform = '';
       if (window.CharacterRenderer) window.CharacterRenderer.setState(state);
     },
     setExpression() {
@@ -57,34 +56,26 @@ function createSpriteFallback() {
     },
     playMotion() {
       // No distinct one-shot motion channel either; setState() already
-      // swaps to the state's dedicated animated WebP loop.
+      // swaps to the state's dedicated static WebP image.
     },
-    lookAt(x) {
-      const layer = document.getElementById('charLayer');
-      if (!layer) return;
-      const nx = Math.max(-1, Math.min(1, x || 0));
-      layer.style.transform = 'translateX(' + (nx * 6).toFixed(1) + 'px)';
-      clearTimeout(lookTimer);
-      lookTimer = setTimeout(() => {
-        layer.style.transform = '';
-      }, 900);
+    lookAt() {
+      // No-op: a static fallback image has no gaze to redirect. Real
+      // lookAt only happens once a Live2D model (ParamAngleX/ParamEyeBallX/Y)
+      // is actually driving the character.
     },
-    setLipSync(value) {
-      const layer = document.getElementById('charLayer');
-      if (!layer) return;
-      layer.classList.toggle('talkPulse', (value || 0) > 0.15);
+    setLipSync() {
+      // No-op: no fake mouth movement on the static fallback image. Real
+      // lip sync only happens once a Live2D model (ParamMouthOpenY) is
+      // actually driving the character.
     },
     startTalking() {
-      // setState('talking') (called separately by index.html around TTS
-      // start) already switches to the talking.webp loop; nothing else to
-      // start here.
+      // No-op: setState('talking') (called separately by index.html around
+      // TTS start) already switches to the talking-state static image.
     },
     stopTalking() {
-      const layer = document.getElementById('charLayer');
-      if (layer) layer.classList.remove('talkPulse');
+      // No-op.
     },
     destroy() {
-      clearTimeout(lookTimer);
       if (window.CharacterRenderer && window.CharacterRenderer.stop) window.CharacterRenderer.stop();
     },
   };
